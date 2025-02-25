@@ -6,7 +6,7 @@ HindPayAI is an intelligent payment gateway solution that detects and prevents f
 
 ## ScreenShots
 
-![image](./readme-assets/home.png)
+![image](./readme-assets/hoome.png)
 ![image](./readme-assets/upi-form.png)
 ![image](./readme-assets/metric.png)
 
