@@ -12,10 +12,14 @@ export async function getPayeeInfo(identifier) {
   }
 }
 
-export async function getPayerInfo() {
+export async function getPayerInfo(token) {
   try {
-    const response = await fetch(`https://5d07-103-208-224-66.ngrok-free.app/auth/user/`);
-     if (!response.ok) {
+    const response = await fetch(`https://5d07-103-208-224-66.ngrok-free.app/auth/user/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();

@@ -1,11 +1,11 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button.jsx";
 import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import { Label } from "@/components/ui/label.jsx";
@@ -18,13 +18,20 @@ import {
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast.js";
 import AuthContext from "@/providers/auth-context";
+import { getPayeeInfo, getPayerInfo } from "@/utils/payUtils.js";
+import { debounce } from "@/lib/utils.js";
+import PaymentTrends from "@/components/UserProfile/PaymentTrends.jsx";
+import LoadingIndicator from "@/components/UserProfile/LoadingIndicator.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 
 function Pay() {
     const [paymentType, setPaymentType] = useState("card");
-    const [payee, setPayee] = useState("");
-    const [amount, setAmount] = useState("");
-    const [loading, setLoading] = useState(false);
+  const [payee, setPayee] = useState("");
+  const [amount, setAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+    const [showTrends, setShowTrends] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [enablePay, setEnablePay] = useState(false);
 
     // Card payment form states
     const [cardNumber, setCardNumber] = useState("");
@@ -34,6 +41,25 @@ function Pay() {
 
     const { toast } = useToast();
     const { user } = useContext(AuthContext);
+
+    useEffect(() => {
+        let trendsTimeout;
+        let enablePayTimeout;
+        if (isLoading) {
+            trendsTimeout = setTimeout(() => {
+                setIsLoading(false);
+                setShowTrends(true);
+            }, 4000); // Show trends after 4 seconds
+            enablePayTimeout = setTimeout(() => {
+                setEnablePay(true);
+            }, 6000); // Enable pay after 6 seconds
+        }
+
+        return () => {
+            clearTimeout(trendsTimeout);
+            clearTimeout(enablePayTimeout);
+        };
+    }, [isLoading]);
 
     // Animation variants
     const tabContentVariants = {
@@ -110,218 +136,109 @@ function Pay() {
     };
 
     return (
-        <div className="h-full-w-nav w-screen m-auto flex items-center justify-center">
-            <Card className="w-[400px]">
-                <CardHeader>
-                    <CardTitle className="text-center">
-                        Make a Payment
-                    </CardTitle>
-                </CardHeader>
-                <Tabs
-                    defaultValue="upi"
-                    onValueChange={handleTabChange}
-                    value={paymentType}
-                >
-                    <TabsList className="grid w-full grid-cols-2 mb-4">
-                        <TabsTrigger value="card">Card Payment</TabsTrigger>
-                        <TabsTrigger value="upi">UPI Payment</TabsTrigger>
-                    </TabsList>
+        <div className="h-full-w-nav w-screen m-auto flex items-center justify-center relative">
+            <motion.div
+                className="w-[350px] absolute left-1/2 transform -translate-x-1/2"
+                initial={{ x: 0 }}
+                animate={{ x: showTrends || isLoading ? -250 : 0 }}
+                transition={{ type: "spring", stiffness: 100 }}
+            >
+                <Card>
+                    <form onSubmit={handlePayment}>
+                        <CardHeader>
+                            <CardTitle>Make a Payment</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pb-6">
+                            <div className="grid w-full items-center gap-4">
+                                <div className="flex flex-col space-y-1.5">
+                                    <Label htmlFor="payee">
+                                        Payee VPA or Phone Number
+                                    </Label>
+                                    <Input
+                                        id="payee"
+                                        value={payee}
+                                        onChange={(e) => {
+                                            setPayee(e.target.value);
+                                        }}
+                                        onBlur={debounce(async () => {
+                                            const identifier = payee;
+                                            if (identifier) {
+                                                try {
+                                                    await getPayeeInfo(identifier);
+                                                    await getPayerInfo(user.token);
+                                                } catch (error) {
+                                                    console.error(
+                                                        "Error in Pay.jsx:",
+                                                        error,
+                                                    );
+                                                }
+                                            }
+                                        }, 300)}
+                                        placeholder="Recipient's VPA or phone number"
+                                    />
+                                </div>
+                                <div className="flex flex-col space-y-1.5">
+                                    <Label htmlFor="amount">Amount</Label>
+                                    <Input
+                                        id="amount"
+                                        value={amount}
+                                        onFocus={() => setIsLoading(true)}
+                                        onChange={(e) => {
+                                            setAmount(e.target.value);
+                                        }}
+                                        placeholder="Amount"
+                                        type="number"
+                                    />
+                                </div>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="flex">
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                disabled={loading || !enablePay}
+                            >
+                                {loading ? "Processing..." : "Pay"}
+                            </Button>
+                        </CardFooter>
+                    </form>
+                </Card>
+            </motion.div>
 
-                    <div
-                        className="relative overflow-hidden"
-                        style={{ minHeight: "350px" }}
-                    >
-                        <AnimatePresence
-                            initial={false}
-                            custom={direction}
-                            mode="wait"
-                        >
-                            {paymentType === "upi" ? (
-                                <motion.div
-                                    key="upi"
-                                    className="absolute w-full"
-                                    custom={direction}
-                                    variants={tabContentVariants}
-                                    initial="enter"
-                                    animate="center"
-                                    exit="exit"
-                                >
-                                    <form onSubmit={handlePayment}>
-                                        <CardContent className="pb-6">
-                                            {/* UPI form fields */}
-                                            <div className="grid w-full items-center gap-4">
-                                                <div className="flex flex-col space-y-1.5">
-                                                    <Label htmlFor="payee">
-                                                        Payee VPA or Phone
-                                                        Number
-                                                    </Label>
-                                                    <Input
-                                                        id="payee"
-                                                        value={payee}
-                                                        onChange={(e) =>
-                                                            setPayee(
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        placeholder="Recipient's VPA or phone number"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="flex flex-col space-y-1.5">
-                                                    <Label htmlFor="amount">
-                                                        Amount
-                                                    </Label>
-                                                    <Input
-                                                        id="amount"
-                                                        value={amount}
-                                                        onChange={(e) =>
-                                                            setAmount(
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        placeholder="Amount"
-                                                        type="number"
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                        <CardFooter className="flex">
-                                            <Button
-                                                type="submit"
-                                                className="w-full"
-                                                disabled={loading}
-                                            >
-                                                {loading
-                                                    ? "Processing..."
-                                                    : "Pay via UPI"}
-                                            </Button>
-                                        </CardFooter>
-                                    </form>
-                                </motion.div>
-                            ) : (
-                                <motion.div
-                                    key="card"
-                                    className="absolute w-full"
-                                    custom={direction}
-                                    variants={tabContentVariants}
-                                    initial="enter"
-                                    animate="center"
-                                    exit="exit"
-                                >
-                                    <form onSubmit={handlePayment}>
-                                        <CardContent className="pb-6">
-                                            {/* Card form fields */}
-                                            <div className="grid w-full items-center gap-4">
-                                                <div className="flex flex-col space-y-1.5">
-                                                    <Label htmlFor="cardNumber">
-                                                        Card Number
-                                                    </Label>
-                                                    <Input
-                                                        id="cardNumber"
-                                                        value={cardNumber}
-                                                        onChange={(e) =>
-                                                            setCardNumber(
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        placeholder="1234 5678 9012 3456"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="flex flex-col space-y-1.5">
-                                                    <Label htmlFor="cardName">
-                                                        Cardholder Name
-                                                    </Label>
-                                                    <Input
-                                                        id="cardName"
-                                                        value={cardName}
-                                                        onChange={(e) =>
-                                                            setCardName(
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        placeholder="Name on card"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="flex flex-col space-y-1.5">
-                                                        <Label htmlFor="expiryDate">
-                                                            Expiry Date
-                                                        </Label>
-                                                        <Input
-                                                            id="expiryDate"
-                                                            value={expiryDate}
-                                                            onChange={(e) =>
-                                                                setExpiryDate(
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            placeholder="MM/YY"
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <div className="flex flex-col space-y-1.5">
-                                                        <Label htmlFor="cvv">
-                                                            CVV
-                                                        </Label>
-                                                        <Input
-                                                            id="cvv"
-                                                            value={cvv}
-                                                            onChange={(e) =>
-                                                                setCvv(
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            placeholder="123"
-                                                            type="password"
-                                                            maxLength={3}
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="flex flex-col space-y-1.5">
-                                                    <Label htmlFor="cardAmount">
-                                                        Amount
-                                                    </Label>
-                                                    <Input
-                                                        id="cardAmount"
-                                                        value={amount}
-                                                        onChange={(e) =>
-                                                            setAmount(
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        placeholder="Amount"
-                                                        type="number"
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                        <CardFooter className="flex">
-                                            <Button
-                                                type="submit"
-                                                className="w-full"
-                                                disabled={loading}
-                                            >
-                                                {loading
-                                                    ? "Processing..."
-                                                    : "Pay with Card"}
-                                            </Button>
-                                        </CardFooter>
-                                    </form>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+            {isLoading && !showTrends && (
+                <motion.div
+                    className="absolute w-[300px] right-1/2 transform translate-x-[450px] flex flex-col items-center space-y-2"
+                    initial={{ x: 300, opacity: 0 }}
+                    animate={{ x: 150, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 100 }}
+                >
+                    <motion.div
+                        className="bg-blue-500 h-4 rounded-full w-full"
+                        animate={{
+                            width: ["0%", "100%"],
+                            transition: { duration: 4 },
+                        }}
+                    />
+                    <div className="flex space-x-4">
+                        <LoadingIndicator text="Analyzing Payer" />
+                        <LoadingIndicator text="Analyzing Merchant" />
                     </div>
-                </Tabs>
-            </Card>
+                </motion.div>
+            )}
+
+            {showTrends && (
+                <motion.div
+                    className="absolute right-1/2 transform translate-x-[350px]"
+                    initial={{ x: 300, opacity: 0 }}
+                    animate={{ x: 150, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 100, delay: 0.2 }}
+                >
+                    <PaymentTrends />
+                </motion.div>
+            )}
         </div>
     );
 }
+
 
 export default Pay;
