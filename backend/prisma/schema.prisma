@@ -1,0 +1,36 @@
+generator client {
+    provider      = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-1.1.x"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id                String    @id @default(cuid())
+    vpa               String    @unique
+    email             String    @unique
+    phone             String    @unique
+    name              String?
+    password          String
+    balance           Float     @default(0)
+    isVerified        Boolean   @default(false)
+    createdAt         DateTime  @default(now())
+    updatedAt         DateTime  @updatedAt
+    passwordUpdatedAt DateTime  @default(now())
+    paidPayments      Payment[] @relation(name: "payer")
+    receivedPayments  Payment[] @relation(name: "payee")
+}
+
+model Payment {
+    id      String   @id @default(cuid())
+    amount  Float
+    status  String
+    payee   User     @relation(fields: [payeeId], references: [id], name: "payee")
+    payeeId String
+    payer   User     @relation(fields: [payerId], references: [id], name: "payer")
+    payerId String
+    time    DateTime @default(now())
+}

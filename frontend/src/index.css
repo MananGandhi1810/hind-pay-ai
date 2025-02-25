@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+@font-face {
+    font-family: "tiempos";
+    src: url("/test-tiempos-text-medium.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "soehne";
+    src: url("test-soehne-buch.woff2") format("woff2");
+}
+
+:root {
+    --background: #FFFFFF;
+    --foreground: #000000;
+    --card: #FFFFFF;
+    --card-foreground: #000000;
+    --popover: #FFFFFF;
+    --popover-foreground: #000000;
+    --primary: #FF8C6B;
+    --primary-foreground: #FFFFFF;
+    --secondary: #94D5A1;
+    --secondary-foreground: #FFFFFF;
+    --muted: #F8F8F8;
+    --muted-foreground: #333333;
+    --accent: #000080;
+    --accent-foreground: #FFFFFF;
+    --destructive: #ff0000;
+    --destructive-foreground: #FFFFFF;
+    --border: #CCCCCC;
+    --input: #CCCCCC;
+    --ring: #000000;
+    --radius: 0.6rem;
+}
+
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --font-tiempos: "tiempos"
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+@utility h-full-w-nav {
+    height: calc(100vh - 65px)
+}
+
+body {
+    font-family: "tiempos";
+    background: linear-gradient(180deg, #feedb5 0%, rgb(249, 238, 255) 100%);
+}
