@@ -462,10 +462,49 @@ const resetPasswordHandler = async (req, res) => {
 };
 
 const userDataHandler = (req, res) => {
+    
     res.status(200).json({
         success: true,
         message: "User found",
         data: req.user,
+    });
+};
+
+const getUserByIdentifierHandler = async (req, res) => {
+    const { identifier } = req.query;
+
+    if (!identifier) {
+        return res.status(400).json({
+            success: false,
+            message: "VPA or phone number is required",
+            data: null,
+        });
+    }
+
+    const user = await prisma.user.findFirst({
+        where: {
+            OR: [{ vpa: identifier }, { phone: identifier }],
+            isVerified: true,
+        },
+        select: {
+            name: true,
+            vpa: true,
+            phone: true,
+        },
+    });
+
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: "User not found",
+            data: null,
+        });
+    }
+
+    res.status(200).json({
+        success: true,
+        message: "User found",
+        data: user,
     });
 };
 
@@ -478,4 +517,5 @@ export {
     verifyOtpHandler,
     resetPasswordHandler,
     userDataHandler,
+    getUserByIdentifierHandler,
 };

@@ -87,3 +87,29 @@ body {
     font-family: "tiempos";
     background: linear-gradient(180deg, #feedb5 0%, rgb(249, 238, 255) 100%);
 }
+
+.animation-delay-300 {
+    animation-delay: 300ms;
+}
+
+.animation-delay-600 {
+    animation-delay: 600ms;
+}
+
+@keyframes typing {
+    0% {
+        opacity: 0.3;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.3;
+    }
+}
+
+.typing-animation {
+    animation: typing 1.5s infinite;
+}

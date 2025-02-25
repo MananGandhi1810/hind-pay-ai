@@ -1,9 +1,11 @@
 import React, {
     useState,
     useEffect,
-    useImperativeHandle,
     forwardRef,
 } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const SpeechToTextComponent = forwardRef(
     (
@@ -90,36 +92,49 @@ const SpeechToTextComponent = forwardRef(
         ]);
 
         return (
-            <div className="bg-white rounded-lg shadow p-4">
-                <div className="mb-4 flex items-center">
-                    <div
-                        className={`w-3 h-3 rounded-full mr-2 ${
-                            isRecording
-                                ? "bg-red-500 animate-pulse"
-                                : "bg-gray-300"
-                        }`}
-                    ></div>
-                    <span>
-                        {isRecording ? "Listening..." : "Not listening"}
-                    </span>
-                </div>
+            <Card>
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center">
+                        <div
+                            className={`w-3 h-3 rounded-full mr-2 ${
+                                isRecording
+                                    ? "bg-red-500 animate-pulse"
+                                    : "bg-muted"
+                            }`}
+                        />
+                        <span>Speech Recognition</span>
+                        <Badge
+                            variant={isRecording ? "default" : "outline"}
+                            className="ml-2 text-xs"
+                        >
+                            {isRecording ? "Active" : "Inactive"}
+                        </Badge>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        <div>
+                            <h3 className="text-sm font-medium mb-1">
+                                Final transcript
+                            </h3>
+                            <div className="p-3 bg-muted rounded min-h-[50px] text-sm">
+                                {transcript || "Waiting for speech..."}
+                            </div>
+                        </div>
 
-                <div className="p-3 bg-gray-50 rounded min-h-[100px] max-h-[300px] overflow-auto">
-                    <p className="font-medium">Final transcript:</p>
-                    <p>{transcript || "Waiting for speech..."}</p>
+                        <Separator />
 
-                    {interimTranscript && (
-                        <>
-                            <p className="font-medium mt-2">
-                                Interim transcript:
-                            </p>
-                            <p className="text-gray-600 italic">
-                                {interimTranscript}
-                            </p>
-                        </>
-                    )}
-                </div>
-            </div>
+                        <div>
+                            <h3 className="text-sm font-medium mb-1">
+                                Interim transcript
+                            </h3>
+                            <div className="p-3 bg-muted rounded min-h-[50px] text-sm text-muted-foreground italic">
+                                {interimTranscript || "No interim results..."}
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
         );
     },
 );

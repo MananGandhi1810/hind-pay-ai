@@ -1,4 +1,6 @@
 import React from "react";
+import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
 const CallAnimation = ({ isActive }) => {
     return (
@@ -7,13 +9,13 @@ const CallAnimation = ({ isActive }) => {
                 {/* Pulsing circles animation */}
                 {isActive && (
                     <>
-                        <div className="absolute inset-0 rounded-full bg-blue-500 opacity-20 animate-ping"></div>
-                        <div className="absolute inset-0 rounded-full bg-blue-400 opacity-30 animate-ping animation-delay-300"></div>
-                        <div className="absolute inset-0 rounded-full bg-blue-300 opacity-40 animate-ping animation-delay-600"></div>
+                        <div className="absolute inset-0 rounded-full bg-primary opacity-20 animate-ping"></div>
+                        <div className="absolute inset-0 rounded-full bg-primary opacity-30 animate-ping animation-delay-300"></div>
+                        <div className="absolute inset-0 rounded-full bg-primary opacity-40 animate-ping animation-delay-600"></div>
                     </>
                 )}
 
-                {/* Phone icon */}
+                {/* Microphone icon in a circular container */}
                 <div
                     className={`w-20 h-20 rounded-full flex items-center justify-center z-10 relative ${
                         isActive ? "bg-green-500" : "bg-gray-300"
@@ -36,13 +38,24 @@ const CallAnimation = ({ isActive }) => {
                 </div>
             </div>
 
-            <div className="mt-4 text-center">
-                <p className="font-medium">
-                    {isActive ? "Call in progress" : "Call ended"}
-                </p>
-                <p className="text-gray-500 text-sm">
-                    {isActive ? "Listening..." : "Press Start to begin"}
-                </p>
+            {/* Recording status message */}
+            <div className="mt-6 text-center">
+                <h3 className="font-medium text-lg">
+                    {isActive ? "Recording in progress" : "Ready to record"}
+                </h3>
+
+                {isActive ? (
+                    <Card className="mt-3 p-3 max-w-xs mx-auto bg-secondary/20 border-secondary">
+                        <p className="text-sm">
+                            Speak clearly to capture your speech. Your words
+                            will be transcribed automatically.
+                        </p>
+                    </Card>
+                ) : (
+                    <p className="text-muted-foreground mt-1">
+                        Press Start to begin recording
+                    </p>
+                )}
             </div>
         </div>
     );
