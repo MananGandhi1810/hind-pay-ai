@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button.jsx";
 import { Link } from "react-router-dom";
+import PaymentAnimation from "../components/PaymentAnimation";
 
 function Home() {
     return (
@@ -10,6 +11,11 @@ function Home() {
                     Experience secure and instant transactions like never
                     before.
                 </p>
+
+                <div className="mb-12 w-full max-w-lg">
+                    <PaymentAnimation />
+                </div>
+
                 <div className="flex gap-4">
                     <Button className="bg-secondary duration-300" asChild>
                         <Link to="/register">Get Started</Link>

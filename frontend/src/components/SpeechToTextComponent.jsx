@@ -1,102 +1,144 @@
-import React, { useState, useEffect } from "react";
-import useSpeechToText from "react-hook-speech-to-text";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import React, {
+    useState,
+    useEffect,
+    forwardRef,
+} from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
-const SpeechToTextComponent = () => {
-    const [transcribedText, setTranscribedText] = useState("");
-    const { toast } = useToast();
+const SpeechToTextComponent = forwardRef(
+    (
+        {
+            isListening = false,
+            onTranscriptUpdate = () => {},
+            onInterimUpdate = () => {},
+        },
+        ref,
+    ) => {
+        const [transcript, setTranscript] = useState("");
+        const [interimTranscript, setInterimTranscript] = useState("");
+        const [isRecording, setIsRecording] = useState(false);
 
-    const {
-        error,
-        interimResult,
-        isRecording,
-        results,
-        startSpeechToText,
-        stopSpeechToText,
-    } = useSpeechToText({
-        continuous: true,
-        useLegacyResults: false,
-    });
+        useEffect(() => {
+            if (
+                !("webkitSpeechRecognition" in window) &&
+                !("SpeechRecognition" in window)
+            ) {
+                console.error(
+                    "Speech recognition not supported in this browser",
+                );
+                return;
+            }
 
-    useEffect(() => {
-        if (error) {
-            toast({
-                variant: "destructive",
-                title: "Speech Recognition Error",
-                description: error,
-            });
-        }
-    }, [error, toast]);
+            const SpeechRecognition =
+                window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
 
-    const handleStartListening = () => {
-        startSpeechToText();
-    };
+            recognition.continuous = true;
+            recognition.interimResults = true;
 
-    const handleStopListening = () => {
-        stopSpeechToText();
-        if (results.length > 0) {
-            console.log(results);
-            setTranscribedText(
-                results.map((result) => result.transcript).join(" "),
-            );
-        }
-    };
+            recognition.onresult = (event) => {
+                let finalTranscript = "";
+                let currentInterim = "";
 
-    const handleClearText = () => {
-        setTranscribedText("");
-    };
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcriptText = event.results[i][0].transcript;
 
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Speech to Text</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="mb-4 flex gap-2">
-                    <Button
-                        onClick={
-                            isRecording
-                                ? handleStopListening
-                                : handleStartListening
-                        }
-                        variant={isRecording ? "destructive" : "default"}
-                    >
-                        {isRecording ? "Stop Listening" : "Start Listening"}
-                    </Button>
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcriptText;
+                        onTranscriptUpdate(transcriptText);
+                    } else {
+                        currentInterim += transcriptText;
+                    }
+                }
 
-                    <Button onClick={handleClearText} variant="outline">
-                        Clear Text
-                    </Button>
-                </div>
+                if (finalTranscript) {
+                    setTranscript(finalTranscript);
+                }
 
-                {isRecording && (
-                    <div className="mb-4">
-                        <p className="font-medium">Interim Result:</p>
-                        <p className="italic">{interimResult}</p>
+                if (currentInterim) {
+                    setInterimTranscript(currentInterim);
+                    onInterimUpdate(currentInterim);
+                }
+            };
+
+            recognition.onend = () => {
+                if (isRecording) {
+                    recognition.start();
+                } else {
+                    setInterimTranscript("");
+                    onInterimUpdate("");
+                }
+            };
+
+            if (isListening && !isRecording) {
+                setIsRecording(true);
+                recognition.start();
+            } else if (!isListening && isRecording) {
+                setIsRecording(false);
+                recognition.stop();
+            }
+
+            return () => {
+                recognition.stop();
+            };
+        }, [
+            isListening,
+            isRecording,
+            onTranscriptUpdate,
+            onInterimUpdate,
+            ref,
+        ]);
+
+        return (
+            <Card>
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center">
+                        <div
+                            className={`w-3 h-3 rounded-full mr-2 ${
+                                isRecording
+                                    ? "bg-red-500 animate-pulse"
+                                    : "bg-muted"
+                            }`}
+                        />
+                        <span>Speech Recognition</span>
+                        <Badge
+                            variant={isRecording ? "default" : "outline"}
+                            className="ml-2 text-xs"
+                        >
+                            {isRecording ? "Active" : "Inactive"}
+                        </Badge>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        <div>
+                            <h3 className="text-sm font-medium mb-1">
+                                Final transcript
+                            </h3>
+                            <div className="p-3 bg-muted rounded min-h-[50px] text-sm">
+                                {transcript || "Waiting for speech..."}
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        <div>
+                            <h3 className="text-sm font-medium mb-1">
+                                Interim transcript
+                            </h3>
+                            <div className="p-3 bg-muted rounded min-h-[50px] text-sm text-muted-foreground italic">
+                                {interimTranscript || "No interim results..."}
+                            </div>
+                        </div>
                     </div>
-                )}
+                </CardContent>
+            </Card>
+        );
+    },
+);
 
-                <div>
-                    <p className="font-medium mb-2">Transcribed Text:</p>
-                    <Textarea
-                        value={
-                            transcribedText ||
-                            (results.length > 0
-                                ? results
-                                      .map((result) => result.transcript)
-                                      .join(" ")
-                                : "No transcription yet")
-                        }
-                        readOnly
-                        className="min-h-[100px]"
-                    />
-                </div>
-            </CardContent>
-        </Card>
-    );
-};
+SpeechToTextComponent.displayName = "SpeechToTextComponent";
 
 export default SpeechToTextComponent;

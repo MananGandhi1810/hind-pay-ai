@@ -1,0 +1,224 @@
+.payment-animation-container {
+    position: relative;
+    width: 400px;
+    height: 250px;
+    margin: 0 auto 20px;
+    max-width: 100%;
+}
+
+.credit-card {
+    position: absolute;
+    width: 160px;
+    height: 100px;
+    background: linear-gradient(135deg, #1a237e, #3949ab);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    color: white;
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.5s ease-in-out, opacity 0.3s ease;
+}
+
+.card-from {
+    left: 0;
+    top: 60px;
+    transform: rotate(-5deg);
+    z-index: 2;
+}
+
+.card-to {
+    right: 0;
+    top: 60px;
+    transform: rotate(5deg);
+    background: linear-gradient(135deg, #00796b, #26a69a);
+    z-index: 2;
+}
+
+.card-chip {
+    width: 40px;
+    height: 30px;
+    background-color: #ffd700;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.card-number {
+    font-family: monospace;
+    letter-spacing: 1.5px;
+    font-size: 1rem;
+}
+
+.card-name {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.transaction-path {
+    position: absolute;
+    top: 105px;
+    left: 160px;
+    width: 80px;
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.transaction-dot {
+    width: 16px;
+    height: 16px;
+    background-color: #4caf50;
+    border-radius: 50%;
+    position: absolute;
+    top: -5px;
+    left: 0;
+    opacity: 0;
+    box-shadow: 0 0 15px #4caf50;
+}
+
+.transaction-success {
+    position: absolute;
+    top: 150px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #4caf50;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    color: white;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.transaction-success.show {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.2);
+    animation: pulse 0.5s ease-in-out;
+}
+
+.transaction-success svg {
+    width: 28px;
+    height: 28px;
+}
+
+/* Animations */
+@keyframes pulse {
+    0% {
+        transform: translateX(-50%) scale(0.8);
+        opacity: 0;
+    }
+
+    50% {
+        transform: translateX(-50%) scale(1.4);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(-50%) scale(1.2);
+        opacity: 1;
+    }
+}
+
+.animate-send {
+    animation: sendCard 3s ease-in-out;
+}
+
+.animate-receive {
+    animation: receiveCard 3s ease-in-out;
+}
+
+.animate-path .transaction-dot {
+    animation: moveDot 1s ease-in-out forwards;
+}
+
+@keyframes sendCard {
+    0% {
+        transform: rotate(-5deg);
+    }
+
+    20% {
+        transform: rotate(-10deg) translateY(-10px);
+    }
+
+    25% {
+        transform: rotate(-10deg) translateY(-10px);
+    }
+
+    100% {
+        transform: rotate(-5deg);
+    }
+}
+
+@keyframes receiveCard {
+    0% {
+        transform: rotate(5deg);
+    }
+
+    60% {
+        transform: rotate(5deg);
+    }
+
+    80% {
+        transform: rotate(10deg) translateY(-10px);
+    }
+
+    100% {
+        transform: rotate(5deg);
+    }
+}
+
+@keyframes moveDot {
+    0% {
+        left: 0;
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 1;
+    }
+
+    100% {
+        left: 100%;
+        opacity: 0;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .payment-animation-container {
+        width: 320px;
+        height: 220px;
+    }
+
+    .credit-card {
+        width: 130px;
+        height: 80px;
+        padding: 10px;
+        font-size: 0.75rem;
+    }
+
+    .card-chip {
+        width: 30px;
+        height: 25px;
+        margin-bottom: 10px;
+    }
+
+    .card-number {
+        font-size: 0.85rem;
+    }
+
+    .transaction-path {
+        top: 90px;
+        left: 130px;
+        width: 60px;
+    }
+}

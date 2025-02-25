@@ -8,6 +8,7 @@ import {
     resetPasswordHandler,
     verifyOtpHandler,
     userDataHandler,
+    getUserByIdentifierHandler,
 } from "../handlers/auth.js";
 
 import { checkAuth } from "../middlewares/auth.js";
@@ -22,5 +23,6 @@ router.post("/forgot-password", forgotPasswordHandler);
 router.post("/verify-otp", verifyOtpHandler);
 router.post("/reset-password", resetPasswordHandler);
 router.get("/user", checkAuth, userDataHandler);
+router.get("/user/find", getUserByIdentifierHandler);
 
 export default router;
