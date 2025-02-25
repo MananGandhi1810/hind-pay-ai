@@ -1,45 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 
-const LoadingIndicator = ({ text }) => {
-  const [loading, setLoading] = useState(true);
-  const [showCheckmark, setShowCheckmark] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-      setShowCheckmark(true);
-    }, 1000); // Change to checkmark after 1 second
-
-    return () => clearTimeout(timer);
-  }, []);
-
+const LoadingIndicator = ({ size = 40, color = "#3498db" }) => {
     return (
-        <div className="flex items-center space-x-2">
-            {loading ? (
-                <motion.div
-                    className="w-4 h-4 rounded-full bg-gray-300"
-                    animate={{
-                        scale: [1, 1.2, 1],
-                        transition: {
-                            duration: 0.6,
-                            repeat: Infinity,
-                            repeatType: "reverse",
-                        },
-                    }}
-                />
-            ) : (
-                showCheckmark && (
-                    <motion.div
-                        className="w-4 h-4 text-green-500"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                    >
-                        &#10003; {/* Checkmark symbol */}
-                    </motion.div>
-                )
-            )}
-            <span>{text}</span>
+        <div className="flex items-center justify-center">
+            <motion.div
+                className="rounded-full"
+                style={{
+                    width: size,
+                    height: size,
+                    border: `4px solid ${color}`,
+                    borderBottomColor: "transparent",
+                }}
+                animate={{ rotate: 360 }}
+                transition={{
+                    duration: 1,
+                    ease: "linear",
+                    repeat: Infinity,
+                }}
+            />
+            <span className="ml-3 text-sm font-medium">
+                Processing payment...
+            </span>
         </div>
     );
 };
