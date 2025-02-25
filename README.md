@@ -4,6 +4,11 @@
 
 HindPayAI is an intelligent payment gateway solution that detects and prevents fraud in payer-to-merchant transactions. By leveraging Large Language Models (LLMs) and advanced anomaly detection, the system creates comprehensive profiles of both merchants and customers to identify suspicious activities before they result in financial loss.
 
+## The Model Architecture:
+Transformers-based Tensorflow-Lite model made with time-series on the given dataset [https://www.kaggle.com/datasets/avinier1/mtw-fintech-hackathon] and synthetically generated.
+![image](https://github.com/user-attachments/assets/7bab996a-4c87-4d6e-8f6d-fe17dcb128df)
+### Synthetic Time Series generation powered by Reinforcement Learning through LLM evals
+
 ## ScreenShots
 
 ![image](./readme-assets/hoome.png)
