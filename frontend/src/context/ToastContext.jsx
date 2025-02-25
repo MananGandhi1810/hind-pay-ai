@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useCallback } from "react";
-import { v4 as uuidv4 } from 'uuid'; // You'll need to install this: npm install uuid
+import { v4 as uuidv4 } from "uuid";
 import Toast from "../components/Toast";
 
 const ToastContext = createContext();
@@ -11,7 +11,7 @@ export const ToastProvider = ({ children }) => {
 
     const showToast = useCallback((message, type = "info", duration = 3000) => {
         const id = uuidv4();
-        setToasts(prevToasts => [
+        setToasts((prevToasts) => [
             ...prevToasts,
             {
                 id,
@@ -22,31 +22,31 @@ export const ToastProvider = ({ children }) => {
             },
         ]);
 
-        // Auto-remove the toast after duration
         setTimeout(() => {
             hideToast(id);
         }, duration);
-        
+
         return id;
     }, []);
 
     const hideToast = useCallback((id) => {
-        setToasts(prevToasts =>
-            prevToasts.map(toast =>
-                toast.id === id ? { ...toast, visible: false } : toast
-            )
+        setToasts((prevToasts) =>
+            prevToasts.map((toast) =>
+                toast.id === id ? { ...toast, visible: false } : toast,
+            ),
         );
-        
-        // Remove toast from array after animation is complete
+
         setTimeout(() => {
-            setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id));
+            setToasts((prevToasts) =>
+                prevToasts.filter((toast) => toast.id !== id),
+            );
         }, 500);
     }, []);
 
     return (
         <ToastContext.Provider value={{ showToast, hideToast }}>
             {children}
-            <div className="toast-container fixed z-50 top-4 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 pointer-events-none">
+            <div className="toast-container fixed z-50 top-4 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 pointer-events-none h-full-w-nav">
                 {toasts.map((toast) => (
                     <div key={toast.id} className="pointer-events-auto">
                         <Toast

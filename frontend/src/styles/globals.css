@@ -1,0 +1,21 @@
+/* Animation delays */
+.animation-delay-300 {
+    animation-delay: 300ms;
+}
+
+.animation-delay-600 {
+    animation-delay: 600ms;
+}
+
+/* Typing animation for interim transcript */
+@keyframes typing {
+    0% { opacity: 0.3; }
+    50% { opacity: 1; }
+    100% { opacity: 0.3; }
+}
+
+.typing-animation {
+    animation: typing 1.5s infinite;
+}
+
+/* Keep other existing CSS rules */

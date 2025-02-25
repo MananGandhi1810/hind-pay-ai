@@ -1,126 +1,129 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useToast } from "../context/ToastContext";
-import { motion } from "framer-motion";
+import React, {
+    useState,
+    useEffect,
+    useImperativeHandle,
+    forwardRef,
+} from "react";
 
-const SpeechToTextComponent = () => {
-    const [isListening, setIsListening] = useState(false);
-    const [transcript, setTranscript] = useState("");
-    const [confidence, setConfidence] = useState(0);
-    const recognitionRef = useRef(null);
-    const { showToast } = useToast();
+const SpeechToTextComponent = forwardRef(
+    (
+        {
+            isListening = false,
+            onTranscriptUpdate = () => {},
+            onInterimUpdate = () => {},
+        },
+        ref,
+    ) => {
+        const [transcript, setTranscript] = useState("");
+        const [interimTranscript, setInterimTranscript] = useState("");
+        const [isRecording, setIsRecording] = useState(false);
 
-    useEffect(() => {
-        if (
-            "SpeechRecognition" in window ||
-            "webkitSpeechRecognition" in window
-        ) {
+        useEffect(() => {
+            if (
+                !("webkitSpeechRecognition" in window) &&
+                !("SpeechRecognition" in window)
+            ) {
+                console.error(
+                    "Speech recognition not supported in this browser",
+                );
+                return;
+            }
+
             const SpeechRecognition =
                 window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognitionRef.current = new SpeechRecognition();
-            recognitionRef.current.continuous = true;
-            recognitionRef.current.interimResults = true;
+            const recognition = new SpeechRecognition();
 
-            recognitionRef.current.onstart = () => {
-                setIsListening(true);
-                showToast("Listening started...", "info");
-            };
+            recognition.continuous = true;
+            recognition.interimResults = true;
 
-            recognitionRef.current.onresult = (event) => {
-                const current = event.resultIndex;
-                if (event.results[current].isFinal) {
-                    const result = event.results[current][0];
-                    setTranscript(prev => prev + " " + result.transcript);
-                    setConfidence(result.confidence * 100);
-                    
-                    if (result.confidence > 0.8) {
-                        showToast("High confidence detection!", "success", 1500);
+            recognition.onresult = (event) => {
+                let finalTranscript = "";
+                let currentInterim = "";
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcriptText = event.results[i][0].transcript;
+
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcriptText;
+                        onTranscriptUpdate(transcriptText);
+                    } else {
+                        currentInterim += transcriptText;
                     }
+                }
+
+                if (finalTranscript) {
+                    setTranscript(finalTranscript);
+                }
+
+                if (currentInterim) {
+                    setInterimTranscript(currentInterim);
+                    onInterimUpdate(currentInterim);
                 }
             };
 
-            recognitionRef.current.onerror = (event) => {
-                console.error("Speech recognition error", event.error);
-                setIsListening(false);
-                showToast(`Error: ${event.error}`, "error", 5000);
+            recognition.onend = () => {
+                if (isRecording) {
+                    recognition.start();
+                } else {
+                    setInterimTranscript("");
+                    onInterimUpdate("");
+                }
             };
 
-            recognitionRef.current.onend = () => {
-                setIsListening(false);
+            if (isListening && !isRecording) {
+                setIsRecording(true);
+                recognition.start();
+            } else if (!isListening && isRecording) {
+                setIsRecording(false);
+                recognition.stop();
+            }
+
+            return () => {
+                recognition.stop();
             };
-        } else {
+        }, [
+            isListening,
+            isRecording,
+            onTranscriptUpdate,
+            onInterimUpdate,
+            ref,
+        ]);
 
-        return () => {
-            if (recognitionRef.current) {
-                recognitionRef.current.stop();
-            }
-        };
-    }, [showToast]);
+        return (
+            <div className="bg-white rounded-lg shadow p-4">
+                <div className="mb-4 flex items-center">
+                    <div
+                        className={`w-3 h-3 rounded-full mr-2 ${
+                            isRecording
+                                ? "bg-red-500 animate-pulse"
+                                : "bg-gray-300"
+                        }`}
+                    ></div>
+                    <span>
+                        {isRecording ? "Listening..." : "Not listening"}
+                    </span>
+                </div>
 
-    const toggleListening = () => {
-        if (isListening) {
-            recognitionRef.current.stop();
-            showToast("Listening stopped", "info");
-        } else {
-            try {
-                recognitionRef.current.start();
-            } catch (error) {
-                console.error("Error starting recognition:", error);
-                showToast("Failed to start listening", "error");
-            }
-        }
-    };
+                <div className="p-3 bg-gray-50 rounded min-h-[100px] max-h-[300px] overflow-auto">
+                    <p className="font-medium">Final transcript:</p>
+                    <p>{transcript || "Waiting for speech..."}</p>
 
-    const clearTranscript = () => {
-        setTranscript("");
-        showToast("Transcript cleared", "success");
-    };
-
-    return (
-        <div className="p-6 border rounded-lg shadow-md bg-white dark:bg-gray-800">
-            <div className="mb-4 flex justify-between">
-                <button
-                    onClick={toggleListening}
-                    className={`px-4 py-2 rounded-md ${
-                        isListening
-                            ? "bg-red-500 hover:bg-red-600"
-                            : "bg-green-500 hover:bg-green-600"
-                    } text-white transition-colors`}
-                >
-                    {isListening ? "Stop Listening" : "Start Listening"}
-                </button>
-                <button
-                    onClick={clearTranscript}
-                    className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md transition-colors"
-                    disabled={!transcript}
-                >
-                    Clear
-                </button>
-            </div>
-
-            <div className="mt-4">
-                <h3 className="text-lg font-medium mb-2">Transcript:</h3>
-                <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-md min-h-[150px] max-h-[300px] overflow-y-auto">
-                    {transcript || (
-                        <span className="text-gray-500">
-                            Your speech will appear here...
-                        </span>
+                    {interimTranscript && (
+                        <>
+                            <p className="font-medium mt-2">
+                                Interim transcript:
+                            </p>
+                            <p className="text-gray-600 italic">
+                                {interimTranscript}
+                            </p>
+                        </>
                     )}
                 </div>
             </div>
+        );
+    },
+);
 
-            {isListening && (
-                <div className="mt-4 flex justify-center">
-                    <div className="flex space-x-1">
-                        <div className="w-2 h-8 bg-green-500 animate-pulse rounded"></div>
-                        <div className="w-2 h-8 bg-green-500 animate-pulse delay-75 rounded"></div>
-                        <div className="w-2 h-8 bg-green-500 animate-pulse delay-150 rounded"></div>
-                        <div className="w-2 h-8 bg-green-500 animate-pulse delay-300 rounded"></div>
-                        <div className="w-2 h-8 bg-green-500 animate-pulse delay-150 rounded"></div>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
+SpeechToTextComponent.displayName = "SpeechToTextComponent";
 
 export default SpeechToTextComponent;
