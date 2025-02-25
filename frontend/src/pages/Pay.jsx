@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Button } from "@/components/ui/button.jsx";
 import {
     Card,
@@ -11,17 +11,18 @@ import { Input } from "@/components/ui/input.jsx";
 import { Label } from "@/components/ui/label.jsx";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast.js";
+import AuthContext from "@/providers/auth-context";
 
 function Pay() {
     const [payee, setPayee] = useState("");
     const [amount, setAmount] = useState("");
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
+    const { user } = useContext(AuthContext);
 
     const handlePayment = async (e) => {
         e.preventDefault();
         setLoading(true);
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
         const response = await axios
             .post(
                 `${process.env.SERVER_URL}/payments`,

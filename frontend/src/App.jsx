@@ -18,6 +18,7 @@ import VerifyOtp from "@/pages/VerifyOtp.jsx";
 import ResetPassword from "@/pages/ResetPassword.jsx";
 import NoPageFound from "@/pages/404.jsx";
 import Call from "./pages/call";
+import { ToastProvider } from "./context/ToastContext.jsx";
 
 function App() {
     const initialState = {
@@ -185,7 +186,9 @@ function App() {
                 }}
             >
                 <ThemeProvider defaultTheme="light">
-                    <RouterProvider router={router} />
+                    <ToastProvider>
+                        <RouterProvider router={router} />
+                    </ToastProvider>
                 </ThemeProvider>
             </AuthContext.Provider>
         </div>
