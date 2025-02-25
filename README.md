@@ -7,10 +7,10 @@ HindPayAI is an intelligent payment gateway solution that detects and prevents f
 ## The Model Architecture:
 Transformers-based Tensorflow-Lite model made with time-series on the given dataset [https://www.kaggle.com/datasets/avinier1/mtw-fintech-hackathon] and synthetically generated.
 ![image](https://github.com/user-attachments/assets/7bab996a-4c87-4d6e-8f6d-fe17dcb128df)
-### Synthetic Time Series generation powered by Reinforcement Learning through LLM evals
+### 🚀Synthetic Time Series generation powered by Reinforcement Learning through LLM evals (Deployed on Fireworks)
+![image](https://github.com/user-attachments/assets/bc824879-83ab-4418-92bd-4c04d639fa6d)
 
-## ScreenShots
-
+### 🖥️ Model implemented through FastAPI on our website (Real-time fraud detection)
 ![image](./readme-assets/hoome.png)
 ![image](./readme-assets/upi-form.png)
 ![image](./readme-assets/metric.png)
@@ -75,17 +75,3 @@ HindPayAI is designed for scalable deployment across various business sizes and 
 -   Real-time processing capabilities handling thousands of transactions per second
 -   Secure API integrations with existing payment infrastructure
 -   Machine learning pipeline for continuous model improvement
-
-### Deployment Options
-
-1. **Starter Tier:** For small businesses processing <10,000 monthly transactions
-2. **Business Tier:** For medium enterprises handling up to 100,000 monthly transactions
-3. **Enterprise Tier:** For large organizations with 100,000+ monthly transactions
-4. **Custom Solutions:** Tailored implementations for unique business requirements
-
-### Integration Capabilities
-
--   Seamless integration with major e-commerce platforms
--   SDK support for mobile and web applications
--   Webhook functionality for custom workflow automation
--   Comprehensive documentation and implementation support
